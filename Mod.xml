@@ -4,7 +4,7 @@
 		<ModId>heatretention</ModId>
 		<Version>0.1.0</Version>
 		<Authors>Svarozhich</Authors>
-		<GameVersion>1.18.8</GameVersion>
+		<GameVersion>1.19.2</GameVersion>
 		<Description></Description>
 		<Website></Website>
 	</PropertyGroup>
