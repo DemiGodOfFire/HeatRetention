@@ -1,6 +1,7 @@
 using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 
 namespace HeatRetention
 {
@@ -26,11 +27,49 @@ namespace HeatRetention
 
         public bool IsActivate()
         {
-            if(!IsActive)
+            if (!IsActive)
             {
                 IsActive = true;
+                Blockentity.MarkDirty();
+                return IsActive;
             }
-            return IsActive;
+            return false;
+        }
+
+        public void Deactivation(BlockPos pos)
+        {
+            if (IsActive)
+            {
+                IsActive = !IsActive;
+                Blockentity.MarkDirty();
+                ItemStack stack = new(Api.World.GetItem(new AssetLocation("flaxfibers")))
+                {
+                    StackSize = ModConfigFile.Current.CostPerBlock
+                };
+                Api.World.SpawnItemEntity(stack, new Vec3d(pos.X + 0.5, pos.Y + 0.5, pos.Z + 0.5));
+            }
+        }
+
+        public bool OnInteract(IPlayer byPlayer, BlockSelection blockSel)
+        {
+            bool isCreative = byPlayer.WorldData.CurrentGameMode == EnumGameMode.Creative;
+            bool tryAccess = Api.World.Claims.TryAccess(byPlayer, blockSel.Position, EnumBlockAccessFlags.BuildOrBreak);
+            ItemSlot handslot = byPlayer.InventoryManager.ActiveHotbarSlot;
+            if (tryAccess && handslot?.Itemstack?.Item?.Code.FirstCodePart() == "knife")
+            {
+                ItemStack stack = new(Api.World.GetItem(new AssetLocation("flaxfibers")))
+                {
+                    StackSize = ModConfigFile.Current.CostPerBlock
+                };
+                Api.World.SpawnItemEntity(stack, blockSel.Position.ToVec3d() + blockSel.HitPosition);
+                if (!isCreative)
+                {
+                    handslot.Itemstack.Item.DamageItem(Api.World, byPlayer.Entity, handslot);
+                }
+                return true;
+            }
+
+            return false;
         }
 
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
@@ -38,6 +77,5 @@ namespace HeatRetention
             base.GetBlockInfo(forPlayer, dsc);
             dsc.AppendLine("IsActive " + IsActive.ToString());
         }
-
     }
 }

@@ -11,10 +11,12 @@ namespace HeatRetention
         public static ModConfigFile Current { get; set; } = null!;
         public int OakumDurability { get; set; } = 64;
         public int CostPerBlock { get; set; } = 1;
+        public int QuantityFibers {  get; set; } = 64;
     }
 
     public class Core : ModSystem
     {
+        public static string? ModId { get; private set; }
 
         public override void StartPre(ICoreAPI api)
         {
@@ -40,22 +42,47 @@ namespace HeatRetention
 
         public override void Start(ICoreAPI api)
         {
-            api.RegisterItemClass($"{Mod.Info.ModID}:ItemOakum", typeof(ItemOakum));
+            ModId = Mod.Info.ModID;
 
-            api.RegisterBlockBehaviorClass($"{Mod.Info.ModID}:BlockHeatRetention", typeof(BlockBehaviorHeatRetention));
+            api.RegisterItemClass($"{ModId}:ItemOakum", typeof(ItemOakum));
 
-            api.RegisterBlockEntityBehaviorClass($"{Mod.Info.ModID}:HeatRetention", typeof(BlockEntityBehaviorHeatRetention));
+            api.RegisterBlockBehaviorClass($"{ModId}:BlockHeatRetention", typeof(BlockBehaviorHeatRetention));
+
+            api.RegisterBlockEntityBehaviorClass($"{ModId}:HeatRetention", typeof(BlockEntityBehaviorHeatRetention));
         }
 
         public override void AssetsFinalize(ICoreAPI api)
         {
+            Recipe(api);
+
             foreach (var block in api.World.Blocks)
-            {                
+            {
                 if (block.FirstCodePart() == "chiseledblock")
                 {
-                    block.BlockBehaviors = block.BlockBehaviors.Append(new BlockBehaviorHeatRetention(block));
-                    block.BlockEntityBehaviors = block.BlockEntityBehaviors.Append(
-                        new BlockEntityBehaviorType() { Name = $"{Mod.Info.ModID}:HeatRetention", properties = null });
+                    BlockBehaviorHeatRetention blockBehavior = new(block);
+                    blockBehavior.OnLoaded(api);
+                    block.BlockBehaviors = block.BlockBehaviors.Append(blockBehavior);
+
+                    if (api.Side == EnumAppSide.Server)
+                    {
+                        block.BlockEntityBehaviors = block.BlockEntityBehaviors.Append(
+                            new BlockEntityBehaviorType() { Name = $"{ModId}:HeatRetention", properties = null });
+                    }
+                }
+            }
+        }
+
+        static void Recipe(ICoreAPI api)
+        {
+            foreach (var grecipe in api.World.GridRecipes)
+            {
+                if (grecipe.Name.ToString() != ($"{ModId}:oakum")) continue;
+                {
+                    if (grecipe.resolvedIngredients[0].Quantity == -1)
+                    {
+                        grecipe.resolvedIngredients[0].Quantity = ModConfigFile.Current.QuantityFibers;
+                        grecipe.resolvedIngredients[0].ResolvedItemstack.StackSize= ModConfigFile.Current.QuantityFibers;
+                    }
                 }
             }
         }

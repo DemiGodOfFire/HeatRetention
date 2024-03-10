@@ -1,0 +1,28 @@
+[
+	{
+		"ingredientPattern": "F",
+		"ingredients": {
+			"F": { "type": "item", "code": "game:flaxfibers", "quantity": -1 }
+		},
+		"width": 1,
+		"height": 1,
+		"shapeless": true,
+		"name": "oakum",
+		"output": { "type": "item", "code": "oakum", "quantity": 1 }
+	},
+	{
+		"ingredientPattern": "O,F",
+		"recipeGroup": 2,
+		"ingredients": {
+			"O": { "type": "item", "code": "oakum"  },
+			"F": { "type": "item", "code": "game:flaxfibers"}
+		},
+		"width": 1,
+		"height": 2,
+		"shapeless": true,
+		"copyAttributesFrom": 'O',
+		"averageDurability": false,
+		"name": "repair",
+		"output": { "type": "item", "code": "oakum" }
+	}
+]
