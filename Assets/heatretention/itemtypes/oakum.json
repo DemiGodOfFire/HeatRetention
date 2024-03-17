@@ -7,7 +7,7 @@
 	"materialDensity": 120,
 	"maxstacksize": 1,	
 	"textures": {
-		"fibers":{ "base":"game:item/resource/fibers"}
+		"fibers":{ "base":"fibers"}
 	},
 	"guiTransform": {
 		"rotation": { "x": 120, "y": 11, "z": -20 },

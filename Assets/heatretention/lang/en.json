@@ -1,4 +1,5 @@
 {
 	"heatretention:item-oakum": "Oakum",
-	"heatretention:itemdesc-oakum": "Allows thermal insulation of chisel blocks"
+	"heatretention:itemdesc-oakum": "Allows thermal insulation of chisel blocks",
+	"heatretention:insulated": "Insulated"
 }

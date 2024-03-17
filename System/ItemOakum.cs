@@ -4,6 +4,7 @@ using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
 
 namespace HeatRetention
@@ -56,7 +57,18 @@ namespace HeatRetention
             // Prevent derp in the handbook
             if (outputSlot is DummySlot) return;
 
-            if (IsRepair(recipe))
+            if (IsCreate(recipe))
+            {
+                CalculateRepairValue(inSlots, outputSlot, out float repairValue, out _);
+
+                int curDur =;
+                int maxDur = GetMaxDurability(outputSlot.Itemstack);
+
+                outputSlot.Itemstack.Attributes.SetInt("durability", Math.Min(maxDur, curDur ));
+
+            }
+
+                if (IsRepair(recipe))
             {
                 CalculateRepairValue(inSlots, outputSlot, out float repairValue, out _);
 
@@ -66,6 +78,14 @@ namespace HeatRetention
                 outputSlot.Itemstack.Attributes.SetInt("durability", Math.Min(maxDur, (int)(curDur + maxDur * repairValue)));
             }
         }
+
+        private void CalculateCreateValue(ItemSlot[] inSlots, ItemSlot outputSlot, out float createValue, out int matCostPerMatType)
+        {
+
+            int maxDur = GetMaxDurability(outputSlot.Itemstack);
+
+        }
+
 
         public override bool ConsumeCraftingIngredients(ItemSlot[] inSlots, ItemSlot outputSlot, GridRecipe recipe)
         {
@@ -97,7 +117,7 @@ namespace HeatRetention
             int maxDur = GetMaxDurability(outputSlot.Itemstack);
 
             // How much 1x mat repairs in %
-            float repairValuePerItem = 2f / origMatCount;
+            float repairValuePerItem = 1f / origMatCount;
             // How much the mat repairs in durability
             float repairDurabilityPerItem = repairValuePerItem * maxDur;
             // Divide missing durability by repair per item = items needed for full repair 
@@ -193,6 +213,11 @@ namespace HeatRetention
         private static bool IsRepair(GridRecipe recipe)
         {
             return recipe.Name.ToString() == ($"{Core.ModId}:repair");
+        }
+
+        private static bool IsCreate(GridRecipe recipe)
+        {
+            return recipe.Name.ToString() == ($"{Core.ModId}:oakum");
         }
     }
 }

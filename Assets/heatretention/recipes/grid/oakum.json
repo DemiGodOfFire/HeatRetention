@@ -2,7 +2,7 @@
 	{
 		"ingredientPattern": "F",
 		"ingredients": {
-			"F": { "type": "item", "code": "game:flaxfibers", "quantity": -1 }
+			"F": { "type": "item", "code": "game:flaxfibers", "quantity": 64 }
 		},
 		"width": 1,
 		"height": 1,

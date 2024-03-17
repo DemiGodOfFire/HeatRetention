@@ -11,7 +11,7 @@ namespace HeatRetention
         public static ModConfigFile Current { get; set; } = null!;
         public int OakumDurability { get; set; } = 64;
         public int CostPerBlock { get; set; } = 1;
-        public int QuantityFibers {  get; set; } = 64;
+        public int QuantityFibers { get; set; } = 64;
     }
 
     public class Core : ModSystem
@@ -53,7 +53,7 @@ namespace HeatRetention
 
         public override void AssetsFinalize(ICoreAPI api)
         {
-            Recipe(api);
+            //Recipe(api);
 
             foreach (var block in api.World.Blocks)
             {
@@ -81,7 +81,7 @@ namespace HeatRetention
                     if (grecipe.resolvedIngredients[0].Quantity == -1)
                     {
                         grecipe.resolvedIngredients[0].Quantity = ModConfigFile.Current.QuantityFibers;
-                        grecipe.resolvedIngredients[0].ResolvedItemstack.StackSize= ModConfigFile.Current.QuantityFibers;
+                        grecipe.resolvedIngredients[0].ResolvedItemstack.StackSize = ModConfigFile.Current.QuantityFibers;
                     }
                 }
             }

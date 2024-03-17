@@ -18,24 +18,12 @@ namespace HeatRetention
             this.api = api;
             block.PlacedPriorityInteract = true;
         }
-
-        public override float OnBlockBreaking(IPlayer player, BlockSelection blockSel, ItemSlot itemslot, float remainingResistance, float dt, int counter, ref EnumHandling handled)
-        {
-            var beh = block.GetBEBehavior<BlockEntityBehaviorHeatRetention>(blockSel.Position);
-
-            if (beh?.IsActive == true)
-            {
-                beh?.Deactivation(blockSel.Position);
-                handled = EnumHandling.PreventSubsequent;
-            }
-            return base.OnBlockBreaking(player, blockSel, itemslot, remainingResistance, dt, counter, ref handled);
-        }
-
+             
         public override int GetRetention(BlockPos pos, BlockFacing facing, EnumRetentionType type, ref EnumHandling handled)
         {
             var beh = block.GetBEBehavior<BlockEntityBehaviorHeatRetention>(pos);
 
-            if (beh?.IsActive == true)
+            if (beh?.IsInsulated == true)
             {
                 BlockEntityMicroBlock bemc = block.GetBlockEntity<BlockEntityMicroBlock>(pos);
 
