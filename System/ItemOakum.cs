@@ -4,7 +4,6 @@ using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
 
 namespace HeatRetention
@@ -39,7 +38,7 @@ namespace HeatRetention
             if (isRepairRecipe)
             {
                 prevDura = dummyslot.Itemstack.Collectible.GetRemainingDurability(dummyslot.Itemstack);
-                dummyslot.Itemstack.Attributes.SetInt("durability", 1);
+                dummyslot.Itemstack.Attributes.SetInt("durability", 0);
             }
 
             base.OnHandbookRecipeRender(capi, recipe, dummyslot, x, y, z, size);
@@ -59,11 +58,11 @@ namespace HeatRetention
 
             if (IsCreate(recipe))
             {
-                CalculateCreateValue(inSlots, outputSlot, out float createValue, out _);
+                CalculateCreateValue(inSlots, recipe, out int createValue);
 
                 int maxDur = GetMaxDurability(outputSlot.Itemstack);
 
-                outputSlot.Itemstack.Attributes.SetInt("durability", Math.Min(maxDur, (int)createValue));
+                outputSlot.Itemstack.Attributes.SetInt("durability", maxDur / Core.Divider * createValue);
 
             }
 
@@ -78,55 +77,22 @@ namespace HeatRetention
             }
         }
 
-        private void CalculateCreateValue(ItemSlot[] inSlots, ItemSlot outputSlot, out float createValue, out int matCostPerMatType)
+        private static void CalculateCreateValue(ItemSlot[] inSlots, GridRecipe recipe, out int createValue)
         {
-            var origMatCount = 64;//GetCreateMatCount(inSlots, outputSlot);
-            var minMatStackSize = GetInputRepairCount(inSlots);
-            var matTypeCount = GetRepairMatTypeCount(inSlots);
-
-            var availableRepairMatCount = Math.Min((int)origMatCount, minMatStackSize * matTypeCount);
-            matCostPerMatType = Math.Min((int)origMatCount, minMatStackSize);
-
-            createValue = (float)availableRepairMatCount / origMatCount;
-        }
-
-
-        public override bool ConsumeCraftingIngredients(ItemSlot[] inSlots, ItemSlot outputSlot, GridRecipe recipe)
-        {
-            if (IsCreate(recipe))
+            createValue = 1;
+            foreach (var slot in inSlots)
             {
-                CalculateCreateValue(inSlots, outputSlot, out _, out int matCostPerMatType);
-
-
-                foreach (var islot in inSlots)
+                if (slot.Empty) continue;
+                var hash = slot.Itemstack.GetHashCode();
+                foreach (var ingredient in recipe.resolvedIngredients)
                 {
-                    if (islot.Empty) continue;
-
-                    if (islot.Itemstack?.Collectible == this) { islot.Itemstack = null; continue; }
-
-                    islot.TakeOut(matCostPerMatType);
+                    if (ingredient.ResolvedItemstack.Id != hash) continue;
+                    var _ = slot.StackSize / ingredient.Quantity;
+                    if (createValue == 1 && createValue < _)
+                        createValue = _;
                 }
-                return true;
             }
-
-            // Consume as much materials in the input grid as needed
-            if (IsRepair(recipe))
-            {
-                CalculateRepairValue(inSlots, outputSlot, out _, out int matCostPerMatType);
-
-                foreach (var islot in inSlots)
-                {
-                    if (islot.Empty) continue;
-
-                    if (islot.Itemstack?.Collectible == this) { islot.Itemstack = null; continue; }
-
-                    islot.TakeOut(matCostPerMatType);
-                }
-
-                return true;
-            }
-
-            return false;
+            if (Core.Divider < createValue) { createValue = Core.Divider; }
         }
 
         private void CalculateRepairValue(ItemSlot[] inSlots, ItemSlot outputSlot, out float repairValue, out int matCostPerMatType)
@@ -150,9 +116,9 @@ namespace HeatRetention
             var availableRepairMatCount = Math.Min(fullRepairMatCount, minMatStackSize * matTypeCount);
             matCostPerMatType = Math.Min(fullRepairMatCount, minMatStackSize);
 
-            repairValue = (float)availableRepairMatCount / origMatCount ;
+            repairValue = (float)availableRepairMatCount / origMatCount;
         }
-              
+
         private static int GetRepairMatTypeCount(ItemSlot[] slots)
         {
             List<ItemStack> stackTypes = new();
@@ -192,14 +158,6 @@ namespace HeatRetention
             }
             return matcounts.Values.Min();
         }
-
-        //private float GetCreateMatCount(ItemSlot[] inputSlots, ItemSlot outputSlot)
-        //{
-        //    var stack = outputSlot.Itemstack;
-        //    var matStack = inputSlots.FirstOrDefault(slot => !slot.Empty && slot.Itemstack.Collectible != this)?.Itemstack;
-
-        //    return origMatCount;
-        //}
 
         private float GetOrigMatCount(ItemSlot[] inputSlots, ItemSlot outputSlot)
         {

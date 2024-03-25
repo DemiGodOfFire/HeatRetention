@@ -1,11 +1,12 @@
 [
 	{
-		"ingredientPattern": "F",
+		"ingredientPattern": "R,F",
 		"ingredients": {
-			"F": { "type": "item", "code": "game:flaxfibers", "quantity": 64 }
+			"F": { "type": "item", "code": "game:flaxfibers", "quantity": 48 },
+			"R": { "type": "item", "code": "game:resin", "quantity": 18 }
 		},
 		"width": 1,
-		"height": 1,
+		"height": 2,
 		"shapeless": true,
 		"name": "oakum",
 		"output": { "type": "item", "code": "oakum", "quantity": 1 }

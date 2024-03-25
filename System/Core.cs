@@ -1,4 +1,6 @@
 using HeatRetention.Extensions;
+using System.Collections.Generic;
+using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -17,6 +19,7 @@ namespace HeatRetention
     public class Core : ModSystem
     {
         public static string? ModId { get; private set; }
+        public static int Divider { get; private set; }
 
         public override void StartPre(ICoreAPI api)
         {
@@ -53,7 +56,10 @@ namespace HeatRetention
 
         public override void AssetsFinalize(ICoreAPI api)
         {
-            //Recipe(api);
+            if (api.Side == EnumAppSide.Server)
+            {
+                Recipe(api);
+            }
 
             foreach (var block in api.World.Blocks)
             {
@@ -72,19 +78,63 @@ namespace HeatRetention
             }
         }
 
-        static void Recipe(ICoreAPI api)
+        private static void Recipe(ICoreAPI api)
         {
             foreach (var grecipe in api.World.GridRecipes)
             {
                 if (grecipe.Name.ToString() != ($"{ModId}:oakum")) continue;
                 {
-                    if (grecipe.resolvedIngredients[0].Quantity == -1)
+                    int count = grecipe.Ingredients.Count;
+                    if (count > 1)
                     {
-                        grecipe.resolvedIngredients[0].Quantity = ModConfigFile.Current.QuantityFibers;
-                        grecipe.resolvedIngredients[0].ResolvedItemstack.StackSize = ModConfigFile.Current.QuantityFibers;
+                        HashSet<int> quantities = new();
+                        foreach (var ingredient in grecipe.resolvedIngredients)
+                        {
+                            quantities.Add(ingredient.Quantity);
+                        }
+
+                        Divider = GCD(quantities.ToArray());
+
+                        foreach (var ingredient in grecipe.resolvedIngredients)
+                        {
+                            ingredient.ResolvedItemstack.StackSize = ingredient.Quantity /= Divider;
+                        }
+                    }
+                    else
+                    {
+                        Divider = grecipe.resolvedIngredients[0].Quantity;
+                        grecipe.resolvedIngredients[0].ResolvedItemstack.StackSize = grecipe.resolvedIngredients[0].Quantity = 1;
+
                     }
                 }
             }
+        }
+
+        private static int GCD(int[] numbers)
+        {
+            // Если в массиве менее двух чисел, вернуть 0
+            if (numbers.Length < 2)
+            {
+                return 0;
+            }
+
+            int result = numbers[0];
+            for (int i = 1; i < numbers.Length; i++)
+            {
+                result = GCD(result, numbers[i]);
+            }
+            return result;
+        }
+
+        private static int GCD(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
         }
     }
 }
