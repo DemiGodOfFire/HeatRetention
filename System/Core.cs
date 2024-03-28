@@ -5,6 +5,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
+using Vintagestory.ServerMods;
 
 namespace HeatRetention
 {
@@ -99,11 +100,14 @@ namespace HeatRetention
                         {
                             ingredient.ResolvedItemstack.StackSize = ingredient.Quantity /= Divider;
                         }
+                        //grecipe.Output.ResolvedItemstack.Attributes.SetInt("durability", ModConfigFile.Current.OakumDurability / Divider);
+
                     }
                     else
                     {
                         Divider = grecipe.resolvedIngredients[0].Quantity;
                         grecipe.resolvedIngredients[0].ResolvedItemstack.StackSize = grecipe.resolvedIngredients[0].Quantity = 1;
+                        //grecipe.Output.ResolvedItemstack.Attributes.SetInt("durability", ModConfigFile.Current.OakumDurability / Divider);
 
                     }
                 }

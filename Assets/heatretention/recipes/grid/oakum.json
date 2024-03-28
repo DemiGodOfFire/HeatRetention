@@ -1,5 +1,6 @@
 [
 	{
+		"enabled": false,
 		"ingredientPattern": "R,F",
 		"ingredients": {
 			"F": { "type": "item", "code": "game:flaxfibers", "quantity": 48 },
@@ -9,7 +10,18 @@
 		"height": 2,
 		"shapeless": true,
 		"name": "oakum",
-		"output": { "type": "item", "code": "oakum", "quantity": 1 }
+		"output": { "type": "item", "code": "oakum" }
+	},
+	{
+		"ingredientPattern": "F",
+		"ingredients": {
+			"F": { "type": "item", "code": "game:flaxfibers", "quantity": 64 }
+		},
+		"width": 1,
+		"height": 1,
+		"shapeless": true,
+		"name": "oakum",
+		"output": { "type": "item", "code": "oakum" }
 	},
 	{
 		"ingredientPattern": "O,F",

@@ -23,12 +23,21 @@ namespace HeatRetention
                 api.World.BlockAccessor.GetBlockEntity(blockSel.Position)
                 .GetBehavior<BlockEntityBehaviorHeatRetention>().IsActivate())
             {
-                DamageItem(api.World, byEntity, slot, ModConfigFile.Current.CostPerBlock);
+                if ((byEntity as EntityPlayer)?.Player.WorldData.CurrentGameMode != EnumGameMode.Creative)
+                {
+                    DamageItem(api.World, byEntity, slot, ModConfigFile.Current.CostPerBlock);
+                }
                 handling = EnumHandHandling.PreventDefaultAction;
                 return;
             }
 
             base.OnHeldInteractStart(slot, byEntity, blockSel, entitySel, firstEvent, ref handling);
+        }
+
+        public override List<ItemStack> GetHandBookStacks(ICoreClientAPI capi)
+        {
+
+            return base.GetHandBookStacks(capi);
         }
 
         public override void OnHandbookRecipeRender(ICoreClientAPI capi, GridRecipe recipe, ItemSlot dummyslot, double x, double y, double z, double size)
@@ -77,9 +86,51 @@ namespace HeatRetention
             }
         }
 
+        public override bool ConsumeCraftingIngredients(ItemSlot[] inSlots, ItemSlot outputSlot, GridRecipe recipe)
+        {
+            if (IsCreate(recipe))
+            {
+                CalculateCreateValue(inSlots, recipe, out int createValue);
+
+                foreach (var slot in inSlots)
+                {
+                    if (slot.Empty) continue;
+
+                    var hash = slot.Itemstack.GetHashCode();
+
+                    foreach (var ingredient in recipe.resolvedIngredients)
+                    {
+                        if (ingredient.ResolvedItemstack.Id != hash) continue;
+                        slot.TakeOut(createValue * ingredient.Quantity);
+                    }
+                }
+
+                return true;
+            }
+
+            // Consume as much materials in the input grid as needed
+            if (IsRepair(recipe))
+            {
+                CalculateRepairValue(inSlots, outputSlot, out _, out int matCostPerMatType);
+
+                foreach (var slot in inSlots)
+                {
+                    if (slot.Empty) continue;
+
+                    if (slot.Itemstack?.Collectible == this) { slot.Itemstack = null; continue; }
+
+                    slot.TakeOut(matCostPerMatType);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
         private static void CalculateCreateValue(ItemSlot[] inSlots, GridRecipe recipe, out int createValue)
         {
-            createValue = 1;
+            createValue = int.MaxValue;
             foreach (var slot in inSlots)
             {
                 if (slot.Empty) continue;
@@ -88,9 +139,15 @@ namespace HeatRetention
                 {
                     if (ingredient.ResolvedItemstack.Id != hash) continue;
                     var _ = slot.StackSize / ingredient.Quantity;
-                    if (createValue == 1 && createValue < _)
+                    if (_ < createValue)
+                    {
                         createValue = _;
+                    }
                 }
+            }
+            if (createValue == int.MaxValue)
+            {
+                createValue = 1;
             }
             if (Core.Divider < createValue) { createValue = Core.Divider; }
         }
