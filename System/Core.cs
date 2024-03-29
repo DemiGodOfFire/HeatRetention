@@ -5,7 +5,6 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
-using Vintagestory.ServerMods;
 
 namespace HeatRetention
 {
@@ -21,6 +20,7 @@ namespace HeatRetention
     {
         public static string? ModId { get; private set; }
         public static int Divider { get; private set; }
+        private static GridRecipe craftRecipe = null!;
 
         public override void StartPre(ICoreAPI api)
         {
@@ -59,7 +59,8 @@ namespace HeatRetention
         {
             if (api.Side == EnumAppSide.Server)
             {
-                Recipe(api);
+                CraftRecipe(api);
+                RepairRecipe(api);
             }
 
             foreach (var block in api.World.Blocks)
@@ -79,7 +80,7 @@ namespace HeatRetention
             }
         }
 
-        private static void Recipe(ICoreAPI api)
+        private static void CraftRecipe(ICoreAPI api)
         {
             foreach (var grecipe in api.World.GridRecipes)
             {
@@ -110,13 +111,32 @@ namespace HeatRetention
                         //grecipe.Output.ResolvedItemstack.Attributes.SetInt("durability", ModConfigFile.Current.OakumDurability / Divider);
 
                     }
+                    craftRecipe = grecipe;
+                }
+            }
+        }
+        private static void RepairRecipe(ICoreAPI api)
+        {
+            foreach (var grecipe in api.World.GridRecipes)
+            {
+                if (grecipe.Name.ToString() != ($"{ModId}:repair")) continue;
+                {
+                    foreach (var ingredient in grecipe.resolvedIngredients)
+                    {
+                        if (ingredient.Code.ToString() == $"{ModId}:oakum") { continue; }
+                        var hash = ingredient.ResolvedItemstack.Id;
+                        foreach(var ing in craftRecipe.resolvedIngredients)
+                        {
+                            if(ing.ResolvedItemstack.Id != hash) { continue; }
+                            ingredient.ResolvedItemstack.StackSize = ingredient.Quantity = ing.Quantity;
+                        }
+                    }
                 }
             }
         }
 
         private static int GCD(int[] numbers)
         {
-            // Если в массиве менее двух чисел, вернуть 0
             if (numbers.Length < 2)
             {
                 return 0;

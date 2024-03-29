@@ -1,6 +1,5 @@
 [
 	{
-		"enabled": false,
 		"ingredientPattern": "R,F",
 		"ingredients": {
 			"F": { "type": "item", "code": "game:flaxfibers", "quantity": 48 },
@@ -13,6 +12,7 @@
 		"output": { "type": "item", "code": "oakum" }
 	},
 	{
+		"enabled": false,
 		"ingredientPattern": "F",
 		"ingredients": {
 			"F": { "type": "item", "code": "game:flaxfibers", "quantity": 64 }
@@ -24,6 +24,23 @@
 		"output": { "type": "item", "code": "oakum" }
 	},
 	{
+		"ingredientPattern": "O,F,R",
+		"recipeGroup": 2,
+		"ingredients": {
+			"O": { "type": "item", "code": "oakum"  },
+			"F": { "type": "item", "code": "game:flaxfibers"},
+			"R": { "type": "item", "code": "game:resin"}
+		},
+		"width": 1,
+		"height": 3,
+		"shapeless": true,
+		"copyAttributesFrom": 'O',
+		"averageDurability": false,
+		"name": "repair",
+		"output": { "type": "item", "code": "oakum" }
+	},
+	{
+		"enabled": false,
 		"ingredientPattern": "O,F",
 		"recipeGroup": 2,
 		"ingredients": {
