@@ -20,7 +20,6 @@ namespace HeatRetention
     {
         public static string? ModId { get; private set; }
         public static int Divider { get; private set; }
-        private static GridRecipe craftRecipe = null!;
 
         public override void StartPre(ICoreAPI api)
         {
@@ -59,8 +58,8 @@ namespace HeatRetention
         {
             if (api.Side == EnumAppSide.Server)
             {
-                CraftRecipe(api);
-                RepairRecipe(api);
+                var recipe = CraftRecipe(api);
+                RepairRecipe(api, recipe);
             }
 
             foreach (var block in api.World.Blocks)
@@ -80,7 +79,7 @@ namespace HeatRetention
             }
         }
 
-        private static void CraftRecipe(ICoreAPI api)
+        private static GridRecipe CraftRecipe(ICoreAPI api)
         {
             foreach (var grecipe in api.World.GridRecipes)
             {
@@ -101,21 +100,19 @@ namespace HeatRetention
                         {
                             ingredient.ResolvedItemstack.StackSize = ingredient.Quantity /= Divider;
                         }
-                        //grecipe.Output.ResolvedItemstack.Attributes.SetInt("durability", ModConfigFile.Current.OakumDurability / Divider);
-
                     }
                     else
                     {
                         Divider = grecipe.resolvedIngredients[0].Quantity;
                         grecipe.resolvedIngredients[0].ResolvedItemstack.StackSize = grecipe.resolvedIngredients[0].Quantity = 1;
-                        //grecipe.Output.ResolvedItemstack.Attributes.SetInt("durability", ModConfigFile.Current.OakumDurability / Divider);
-
                     }
-                    craftRecipe = grecipe;
+                   return grecipe;
                 }
             }
+            throw new System.NotSupportedException($"[{ModId}] Craft recipe not found");
         }
-        private static void RepairRecipe(ICoreAPI api)
+
+        private static void RepairRecipe(ICoreAPI api, GridRecipe currentCraftRecipe)
         {
             foreach (var grecipe in api.World.GridRecipes)
             {
@@ -125,9 +122,20 @@ namespace HeatRetention
                     {
                         if (ingredient.Code.ToString() == $"{ModId}:oakum") { continue; }
                         var hash = ingredient.ResolvedItemstack.Id;
-                        foreach(var ing in craftRecipe.resolvedIngredients)
+                        foreach(var ing in currentCraftRecipe.resolvedIngredients)
                         {
                             if(ing.ResolvedItemstack.Id != hash) { continue; }
+                            ingredient.ResolvedItemstack.StackSize = ingredient.Quantity = ing.Quantity;
+                        }
+                    }
+
+                    foreach (var(_, ingredient) in grecipe.Ingredients)
+                    {
+                        if (ingredient.Code.ToString() == $"{ModId}:oakum") { continue; }
+                        var hash = ingredient.ResolvedItemstack.Id;
+                        foreach (var ing in currentCraftRecipe.resolvedIngredients)
+                        {
+                            if (ing.ResolvedItemstack.Id != hash) { continue; }
                             ingredient.ResolvedItemstack.StackSize = ingredient.Quantity = ing.Quantity;
                         }
                     }
