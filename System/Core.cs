@@ -13,7 +13,6 @@ namespace HeatRetention
         public static ModConfigFile Current { get; set; } = null!;
         public int OakumDurability { get; set; } = 64;
         public int CostPerBlock { get; set; } = 1;
-        public int QuantityFibers { get; set; } = 64;
     }
 
     public class Core : ModSystem
