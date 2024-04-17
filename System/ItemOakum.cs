@@ -16,7 +16,8 @@ namespace HeatRetention
             base.OnLoaded(api);
         }
 
-        public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
+        public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel,
+            bool firstEvent, ref EnumHandHandling handling)
         {
             if (blockSel != null && api.World.BlockAccessor.GetBlock(blockSel.Position) is BlockChisel &&
                 api.World.BlockAccessor.GetBlockEntity(blockSel.Position)
@@ -95,9 +96,7 @@ namespace HeatRetention
             // Consume as much materials in the input grid as needed
             if (IsRepair(recipe))
             {
-                //CalculateCreateValue(inSlots, outputSlot, recipe, out _);
                 CalculateRepairValue(inSlots, outputSlot, recipe, out int repairValue);
-
 
                 foreach (var slot in inSlots)
                 {
@@ -142,12 +141,12 @@ namespace HeatRetention
                     }
                 }
             }
+
             if (createValue == int.MaxValue)
             {
                 createValue = 1;
             }
             if (Core.Divider < createValue) { createValue = Core.Divider; }
-
 
         }
 
