@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
@@ -61,7 +62,9 @@ namespace HeatRetention
                 int maxDur = GetMaxDurability(outputSlot.Itemstack);
 
                 CalculateCreateValue(inSlots, recipe, out int createValue);
-                createValue = Math.Min((maxDur - curDur) / Core.Divider, createValue);
+
+                createValue = (int)Math.Min((1 - (float)curDur /maxDur) * Core.Divider, createValue);
+
                 outputSlot.Itemstack.Attributes.SetInt("durability", Math.Min(maxDur, (int)(curDur + maxDur / Core.Divider * createValue)));
 
             }
@@ -92,12 +95,9 @@ namespace HeatRetention
             // Consume as much materials in the input grid as needed
             if (IsRepair(recipe))
             {
-                CalculateCreateValue(inSlots, recipe, out int createValue);
+                //CalculateCreateValue(inSlots, outputSlot, recipe, out _);
+                CalculateRepairValue(inSlots, outputSlot, recipe, out int repairValue);
 
-                int curDur = outputSlot.Itemstack.Collectible.GetRemainingDurability(outputSlot.Itemstack);
-                int maxDur = GetMaxDurability(outputSlot.Itemstack);
-
-                createValue = Math.Min((maxDur - curDur) / Core.Divider, createValue);
 
                 foreach (var slot in inSlots)
                 {
@@ -110,7 +110,7 @@ namespace HeatRetention
                     foreach (var ingredient in recipe.resolvedIngredients)
                     {
                         if (ingredient.ResolvedItemstack.Id != hash) continue;
-                        slot.TakeOut(createValue * ingredient.Quantity);
+                        slot.TakeOut(repairValue * ingredient.Quantity);
                     }
                 }
 
@@ -123,6 +123,8 @@ namespace HeatRetention
         private void CalculateCreateValue(ItemSlot[] inSlots, GridRecipe recipe, out int createValue)
         {
             createValue = int.MaxValue;
+
+
             foreach (var slot in inSlots)
             {
                 if (slot.Empty) continue;
@@ -145,6 +147,19 @@ namespace HeatRetention
                 createValue = 1;
             }
             if (Core.Divider < createValue) { createValue = Core.Divider; }
+
+
+        }
+
+        private void CalculateRepairValue(ItemSlot[] inSlots, ItemSlot outputSlot, GridRecipe recipe, out int repairValue)
+        {
+            CalculateCreateValue(inSlots, recipe, out int createValue);
+
+            var oakumSlot = inSlots.FirstOrDefault(slot => slot.Itemstack?.Collectible is ItemOakum);
+            int curDur = outputSlot.Itemstack.Collectible.GetRemainingDurability(oakumSlot?.Itemstack);
+            int maxDur = GetMaxDurability(outputSlot.Itemstack);
+
+            repairValue = (int)Math.Min((1 - (float)curDur / maxDur) * Core.Divider, createValue);
         }
 
         private static bool IsRepair(GridRecipe recipe)
