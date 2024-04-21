@@ -1,4 +1,5 @@
 using HeatRetention.Extensions;
+using ProtoBuf;
 using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Client;
@@ -8,11 +9,12 @@ using Vintagestory.API.Util;
 
 namespace HeatRetention
 {
+    [ProtoContract]
     public class ModConfigFile
     {
         public static ModConfigFile Current { get; set; } = null!;
-        public int OakumDurability { get; set; } = 64;
-        public int CostPerBlock { get; set; } = 1;
+        [ProtoMember(1)] public int OakumDurability { get; set; } = 64;
+        [ProtoMember(2)] public int CostPerBlock { get; set; } = 1;
     }
 
     public class Core : ModSystem
